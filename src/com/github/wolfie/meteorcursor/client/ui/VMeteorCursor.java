@@ -1,6 +1,7 @@
 package com.github.wolfie.meteorcursor.client.ui;
 
 import com.google.gwt.animation.client.Animation;
+import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.DOM;
@@ -10,6 +11,7 @@ import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.terminal.gwt.client.ApplicationConnection;
+import com.vaadin.terminal.gwt.client.BrowserInfo;
 import com.vaadin.terminal.gwt.client.Paintable;
 import com.vaadin.terminal.gwt.client.UIDL;
 
@@ -39,10 +41,9 @@ public class VMeteorCursor extends Widget implements Paintable,
           }
           
           if (progress < 1) {
-            style
-                .setTop(
-                    y + 10 + (PARTICLE_TRAVEL_LENGTH * progress * deltaTop),
-                    Style.Unit.PX);
+            style.setTop(y + 10
+                + (PARTICLE_TRAVEL_LENGTH * progress * deltaTop) + GRAVITY
+                * progress * progress, Style.Unit.PX);
             style.setLeft(x + 10
                 + (PARTICLE_TRAVEL_LENGTH * progress * deltaLeft),
                 Style.Unit.PX);
@@ -81,6 +82,7 @@ public class VMeteorCursor extends Widget implements Paintable,
   private static final int PARTICLE_LIFETIME_MILLIS = 1000;
   private static final double PARTICLE_TRAVEL_LENGTH = 100;
   private static final int PARTICLE_SIZE = 10;
+  private static final int GRAVITY = 50;
   
   /** The client side widget identifier */
   protected String paintableId;
@@ -97,6 +99,13 @@ public class VMeteorCursor extends Widget implements Paintable,
    */
   public VMeteorCursor() {
     Event.addNativePreviewHandler(this);
+    
+    // we need a div so that Vaadin doesn't throw a fit.
+    setElement(Document.get().createDivElement());
+    if (BrowserInfo.get().isIE6()) {
+      getElement().getStyle().setProperty("overflow", "hidden");
+      getElement().getStyle().setProperty("height", "0");
+    }
   }
   
   /**
