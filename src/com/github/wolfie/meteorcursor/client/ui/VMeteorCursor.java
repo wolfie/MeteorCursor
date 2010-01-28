@@ -41,14 +41,13 @@ public class VMeteorCursor extends Widget implements Paintable,
           }
           
           if (progress < 1) {
-            style.setTop(y + 10
-                + (PARTICLE_TRAVEL_LENGTH * progress * deltaTop) + GRAVITY
+            style.setTop(y + 10 + (speed * 2 * progress * deltaTop) + GRAVITY
                 * progress * progress, Style.Unit.PX);
-            style.setLeft(x + 10
-                + (PARTICLE_TRAVEL_LENGTH * progress * deltaLeft),
+            style.setLeft(x + 10 + (speed * 2 * progress * deltaLeft),
                 Style.Unit.PX);
             
-            final double size = PARTICLE_SIZE - (PARTICLE_SIZE * progress);
+            final double size = Math.ceil(PARTICLE_SIZE
+                - (PARTICLE_SIZE * progress));
             style.setHeight(size, Style.Unit.PX);
             style.setWidth(size, Style.Unit.PX);
             
@@ -80,7 +79,6 @@ public class VMeteorCursor extends Widget implements Paintable,
   private static final double THRESHOLD = 10;
   
   private static final int PARTICLE_LIFETIME_MILLIS = 1000;
-  private static final double PARTICLE_TRAVEL_LENGTH = 100;
   private static final int PARTICLE_SIZE = 10;
   private static final int GRAVITY = 75;
   
@@ -130,12 +128,19 @@ public class VMeteorCursor extends Widget implements Paintable,
       final double speed = getDistanceTravelled(mouseX, mouseY, previousMouseX,
           previousMouseY);
       
+      // ignore the first cursor move
+      if (previousMouseX != -1 && previousMouseY != -1) {
+        
+        // for each double exceeding of the threshold, paint one particle
+        double particleThresholdCounter = THRESHOLD;
+        while (particleThresholdCounter < speed) {
+          RootPanel.get().add(new Particle(mouseX, mouseY, speed));
+          particleThresholdCounter += THRESHOLD * 2;
+        }
+      }
+      
       previousMouseX = mouseX;
       previousMouseY = mouseY;
-      
-      if (speed > THRESHOLD) {
-        RootPanel.get().add(new Particle(mouseX, mouseY, speed));
-      }
     }
   }
   
