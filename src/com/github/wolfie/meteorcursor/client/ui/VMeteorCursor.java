@@ -82,7 +82,7 @@ public class VMeteorCursor extends Widget implements Paintable,
   private static final int PARTICLE_LIFETIME_MILLIS = 1000;
   private static final double PARTICLE_TRAVEL_LENGTH = 100;
   private static final int PARTICLE_SIZE = 10;
-  private static final int GRAVITY = 50;
+  private static final int GRAVITY = 75;
   
   /** The client side widget identifier */
   protected String paintableId;
