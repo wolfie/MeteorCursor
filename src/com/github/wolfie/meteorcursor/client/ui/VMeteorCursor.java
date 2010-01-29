@@ -18,15 +18,15 @@ import com.vaadin.terminal.gwt.client.UIDL;
 public class VMeteorCursor extends Widget implements Paintable,
     NativePreviewHandler {
   
-  private static class Particle extends Widget {
+  private class Particle extends Widget {
     public Particle(final int x, final int y, final double speed) {
       setElement(DOM.createDiv());
       final Element e = getElement();
       e.setClassName(PARTICLE_CLASSNAME);
       
       final Style style = e.getStyle();
-      style.setTop(y + 10, Style.Unit.PX);
-      style.setLeft(x + 10, Style.Unit.PX);
+      style.setTop(y + EFFECT_TOP_OFFSET, Style.Unit.PX);
+      style.setLeft(x + EFFECT_LEFT_OFFSET, Style.Unit.PX);
       style.setBackgroundColor(getBackground((speed - 10) * 10));
       
       new Animation() {
@@ -41,9 +41,11 @@ public class VMeteorCursor extends Widget implements Paintable,
           }
           
           if (progress < 1) {
-            style.setTop(y + 10 + (speed * 2 * progress * deltaTop) + GRAVITY
-                * progress * progress, Style.Unit.PX);
-            style.setLeft(x + 10 + (speed * 2 * progress * deltaLeft),
+            style.setTop(y + 10
+                + (speed * distanceMultiplier * progress * deltaTop)
+                + (gravity * progress * progress), Style.Unit.PX);
+            style.setLeft(x + 10
+                + (speed * distanceMultiplier * progress * deltaLeft),
                 Style.Unit.PX);
             
             final double size = Math.ceil(PARTICLE_SIZE
@@ -61,7 +63,7 @@ public class VMeteorCursor extends Widget implements Paintable,
           // ease-out
           return 1.5 * progress - 0.5 * Math.pow(progress, 3);
         }
-      }.run(PARTICLE_LIFETIME_MILLIS);
+      }.run(particleLifetimeMillis);
     }
     
     private String getBackground(final double speed) {
@@ -76,11 +78,16 @@ public class VMeteorCursor extends Widget implements Paintable,
   public static final String CLASSNAME = "v-meteorcursor";
   public static final String PARTICLE_CLASSNAME = CLASSNAME + "-particle";
   
-  private static final double THRESHOLD = 10;
+  public static final String ATTRIBUTE_VAADIN_DISABLED = "disabled";
   
-  private static final int PARTICLE_LIFETIME_MILLIS = 1000;
-  private static final int PARTICLE_SIZE = 10;
-  private static final int GRAVITY = 75;
+  public static final String ATTRIBUTE_GRAVITY_INT = "gr";
+  public static final String ATTRIBUTE_THRESHOLD_INT = "th";
+  public static final String ATTRIBUTE_PART_LIFETIME_INT = "pl";
+  public static final String ATTRIBUTE_DISTANCE_DBL = "di";
+  
+  private static final int PARTICLE_SIZE = 15;
+  private static final int EFFECT_TOP_OFFSET = 10;
+  private static final int EFFECT_LEFT_OFFSET = 10;
   
   /** The client side widget identifier */
   protected String paintableId;
@@ -90,6 +97,13 @@ public class VMeteorCursor extends Widget implements Paintable,
   
   private int previousMouseY = -1;
   private int previousMouseX = -1;
+  
+  private int gravity;
+  private int threshold;
+  private int particleLifetimeMillis;
+  private double distanceMultiplier;
+  
+  private boolean disabled = false;
   
   /**
    * The constructor should first call super() to initialize the component and
@@ -114,6 +128,27 @@ public class VMeteorCursor extends Widget implements Paintable,
       return;
     }
     
+    if (uidl.hasAttribute(ATTRIBUTE_VAADIN_DISABLED)) {
+      disabled = uidl.getBooleanAttribute(ATTRIBUTE_VAADIN_DISABLED);
+    }
+    
+    if (uidl.hasAttribute(ATTRIBUTE_GRAVITY_INT)) {
+      gravity = uidl.getIntAttribute(ATTRIBUTE_GRAVITY_INT);
+    }
+    
+    if (uidl.hasAttribute(ATTRIBUTE_THRESHOLD_INT)) {
+      threshold = uidl.getIntAttribute(ATTRIBUTE_THRESHOLD_INT);
+    }
+    
+    if (uidl.hasAttribute(ATTRIBUTE_PART_LIFETIME_INT)) {
+      particleLifetimeMillis = uidl
+          .getIntAttribute(ATTRIBUTE_PART_LIFETIME_INT);
+    }
+    
+    if (uidl.hasAttribute(ATTRIBUTE_DISTANCE_DBL)) {
+      distanceMultiplier = uidl.getDoubleAttribute(ATTRIBUTE_DISTANCE_DBL);
+    }
+    
     this.client = client;
     paintableId = uidl.getId();
   }
@@ -121,7 +156,7 @@ public class VMeteorCursor extends Widget implements Paintable,
   public void onPreviewNativeEvent(final NativePreviewEvent event) {
     final String type = event.getNativeEvent().getType();
     
-    if ("mousemove".equals(type)) {
+    if ("mousemove".equals(type) && !disabled) {
       final int mouseX = event.getNativeEvent().getClientX();
       final int mouseY = event.getNativeEvent().getClientY();
       
@@ -132,10 +167,10 @@ public class VMeteorCursor extends Widget implements Paintable,
       if (previousMouseX != -1 && previousMouseY != -1) {
         
         // for each double exceeding of the threshold, paint one particle
-        double particleThresholdCounter = THRESHOLD;
+        int particleThresholdCounter = threshold;
         while (particleThresholdCounter < speed) {
           RootPanel.get().add(new Particle(mouseX, mouseY, speed));
-          particleThresholdCounter += THRESHOLD * 2;
+          particleThresholdCounter += threshold * 2;
         }
       }
       
