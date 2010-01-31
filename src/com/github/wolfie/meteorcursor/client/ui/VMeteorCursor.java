@@ -4,10 +4,10 @@ import com.google.gwt.animation.client.Animation;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
-import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Event;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 import com.vaadin.terminal.gwt.client.ApplicationConnection;
@@ -18,16 +18,16 @@ import com.vaadin.terminal.gwt.client.UIDL;
 public class VMeteorCursor extends Widget implements Paintable,
     NativePreviewHandler {
   
-  private class Particle extends Widget {
+  private class Particle extends HTML {
     public Particle(final int x, final int y, final double speed) {
-      setElement(DOM.createDiv());
+      super("<img/>");
+      
       final Element e = getElement();
       e.setClassName(PARTICLE_CLASSNAME);
       
       final Style style = e.getStyle();
       style.setTop(y + EFFECT_TOP_OFFSET, Style.Unit.PX);
       style.setLeft(x + EFFECT_LEFT_OFFSET, Style.Unit.PX);
-      style.setBackgroundColor(getBackground((speed - 10) * 10));
       
       new Animation() {
         private double deltaTop = -2;
@@ -48,10 +48,17 @@ public class VMeteorCursor extends Widget implements Paintable,
                 + (speed * distanceMultiplier * progress * deltaLeft),
                 Style.Unit.PX);
             
-            final double size = Math.ceil(PARTICLE_SIZE
-                - (PARTICLE_SIZE * progress));
-            style.setHeight(size, Style.Unit.PX);
-            style.setWidth(size, Style.Unit.PX);
+            final int size = Double.valueOf(
+                Math.ceil(PARTICLE_SIZE - (PARTICLE_SIZE * progress)))
+                .intValue();
+            
+            /*
+             * The HTML needs to be set as a HTML widget instead of
+             * DOM.createImg() since changing the dimensions in GWT just crops
+             * the image, and the image is not re-scaled to fit 100% into the
+             * Element.
+             */
+            setHTML(getImgHTML(size));
             
           } else {
             removeFromParent();
@@ -66,11 +73,9 @@ public class VMeteorCursor extends Widget implements Paintable,
       }.run(particleLifetimeMillis);
     }
     
-    private String getBackground(final double speed) {
-      final int colorInt = Math.min(Double.valueOf(speed).intValue(), 255);
-      String hexString = Integer.toHexString(colorInt);
-      hexString = hexString.length() < 2 ? "0" + hexString : hexString;
-      return "#" + hexString + "0000";
+    private String getImgHTML(final int size) {
+      return "<img src='" + getParticleImageURI() + "' height=" + size
+          + " width=" + size + "/>";
     }
   }
   
@@ -84,6 +89,7 @@ public class VMeteorCursor extends Widget implements Paintable,
   public static final String ATTRIBUTE_THRESHOLD_INT = "th";
   public static final String ATTRIBUTE_PART_LIFETIME_INT = "pl";
   public static final String ATTRIBUTE_DISTANCE_DBL = "di";
+  public static final String ATTRIBUTE_IMAGE_RSRC = "im";
   
   private static final int PARTICLE_SIZE = 15;
   private static final int EFFECT_TOP_OFFSET = 10;
@@ -102,6 +108,7 @@ public class VMeteorCursor extends Widget implements Paintable,
   private int threshold;
   private int particleLifetimeMillis;
   private double distanceMultiplier;
+  private String particleImage;
   
   private boolean disabled = false;
   
@@ -149,6 +156,11 @@ public class VMeteorCursor extends Widget implements Paintable,
       distanceMultiplier = uidl.getDoubleAttribute(ATTRIBUTE_DISTANCE_DBL);
     }
     
+    if (uidl.hasAttribute(ATTRIBUTE_IMAGE_RSRC)) {
+      particleImage = client.translateVaadinUri(uidl
+          .getStringAttribute(ATTRIBUTE_IMAGE_RSRC));
+    }
+    
     this.client = client;
     paintableId = uidl.getId();
   }
@@ -182,5 +194,9 @@ public class VMeteorCursor extends Widget implements Paintable,
   private double getDistanceTravelled(final int x, final int y,
       final int previousX, final int previousY) {
     return Math.sqrt(Math.pow(x - previousX, 2) + Math.pow(y - previousY, 2));
+  }
+  
+  private String getParticleImageURI() {
+    return particleImage != null ? particleImage : "";
   }
 }

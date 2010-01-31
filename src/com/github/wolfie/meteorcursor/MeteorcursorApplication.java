@@ -16,12 +16,15 @@ import com.vaadin.ui.Button.ClickListener;
 public class MeteorcursorApplication extends Application {
   @Override
   public void init() {
+    setTheme("meteorcursor");
     final Window mainWindow = new Window("Meteorcursor Application");
     mainWindow.setContent(new HorizontalLayout());
     setMainWindow(mainWindow);
     
     final MeteorCursor meteorCursor = new MeteorCursor();
+    
     mainWindow.addComponent(meteorCursor);
+    mainWindow.addComponent(new ParticleImageSelector(meteorCursor));
     mainWindow.addComponent(new Button("Disable", new ClickListener() {
       private static final long serialVersionUID = 7162981081807888955L;
       
@@ -33,7 +36,7 @@ public class MeteorcursorApplication extends Application {
     }));
     
     final TextField gravityTextField = new TextField();
-    gravityTextField.setValue(meteorCursor.getGravity());
+    gravityTextField.setValue(String.valueOf(meteorCursor.getGravity()));
     gravityTextField.addValidator(new IntegerValidator("Must be an integer."));
     gravityTextField.setImmediate(true);
     gravityTextField.setCaption("Gravity");
@@ -50,7 +53,7 @@ public class MeteorcursorApplication extends Application {
     mainWindow.addComponent(gravityTextField);
     
     final TextField thresholdTextField = new TextField();
-    thresholdTextField.setValue(meteorCursor.getThreshold());
+    thresholdTextField.setValue(String.valueOf(meteorCursor.getThreshold()));
     thresholdTextField
         .addValidator(new IntegerValidator("Must be an integer."));
     thresholdTextField.setImmediate(true);
@@ -68,7 +71,8 @@ public class MeteorcursorApplication extends Application {
     mainWindow.addComponent(thresholdTextField);
     
     final TextField lifetimeTextField = new TextField();
-    lifetimeTextField.setValue(meteorCursor.getParticleLifetime());
+    lifetimeTextField.setValue(String.valueOf(meteorCursor
+        .getParticleLifetime()));
     lifetimeTextField.addValidator(new IntegerValidator("Must be an integer."));
     lifetimeTextField.setImmediate(true);
     lifetimeTextField.setCaption("Particle Lifetime (ms)");
@@ -85,7 +89,8 @@ public class MeteorcursorApplication extends Application {
     mainWindow.addComponent(lifetimeTextField);
     
     final TextField distanceTextField = new TextField();
-    distanceTextField.setValue(meteorCursor.getDistanceMultiplier());
+    distanceTextField.setValue(String.valueOf(meteorCursor
+        .getDistanceMultiplier()));
     distanceTextField.addValidator(new DoubleValidator("Must be a double."));
     distanceTextField.setImmediate(true);
     distanceTextField.setCaption("Distance multiplier");
