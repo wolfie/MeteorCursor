@@ -125,6 +125,10 @@ public class MeteorCursor extends AbstractComponent {
    *         <tt>false</tt> otherwise.
    */
   public boolean setParticleImage(final ThemeResource particleImage) {
+    if (particleImage == null) {
+      return false;
+    }
+    
     final String mt = particleImage.getMIMEType();
     
     // borrowed from Embedded
