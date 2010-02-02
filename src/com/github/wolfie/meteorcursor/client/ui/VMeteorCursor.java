@@ -42,9 +42,9 @@ public class VMeteorCursor extends Widget implements Paintable,
       e.setClassName(PARTICLE_CLASSNAME);
       
       final Style style = e.getStyle();
-      style.setTop(y + EFFECT_TOP_OFFSET, Style.Unit.PX);
-      style.setLeft(x + EFFECT_LEFT_OFFSET, Style.Unit.PX);
-      
+      style.setPropertyPx("top", y + EFFECT_TOP_OFFSET);
+      style.setPropertyPx("left", x + EFFECT_LEFT_OFFSET);
+
       new Animation() {
         private double deltaTop = -2;
         private double deltaLeft = -2;
@@ -57,13 +57,16 @@ public class VMeteorCursor extends Widget implements Paintable,
           }
           
           if (progress < 1) {
-            style.setTop(y + 10
-                + (speed * distanceMultiplier * progress * deltaTop)
-                + (gravity * progress * progress), Style.Unit.PX);
-            style.setLeft(x + 10
-                + (speed * distanceMultiplier * progress * deltaLeft),
-                Style.Unit.PX);
-            
+            final int top = Double.valueOf(
+                y + 10 + (speed * distanceMultiplier * progress * deltaTop)
+                    + (gravity * progress * progress)).intValue();
+            final int left = Double.valueOf(
+                x + 10 + (speed * distanceMultiplier * progress * deltaLeft))
+                .intValue();
+
+            style.setPropertyPx("top", top);
+            style.setPropertyPx("left", left);
+
             final int size = Double.valueOf(
                 Math.ceil(PARTICLE_SIZE - (PARTICLE_SIZE * progress)))
                 .intValue();
