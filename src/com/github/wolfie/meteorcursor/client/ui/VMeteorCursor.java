@@ -21,6 +21,7 @@ import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.Element;
 import com.google.gwt.dom.client.Style;
 import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Event.NativePreviewEvent;
 import com.google.gwt.user.client.Event.NativePreviewHandler;
 import com.google.gwt.user.client.ui.HTML;
@@ -42,8 +43,8 @@ public class VMeteorCursor extends Widget implements Paintable,
       e.setClassName(PARTICLE_CLASSNAME);
       
       final Style style = e.getStyle();
-      style.setPropertyPx("top", y + EFFECT_TOP_OFFSET);
-      style.setPropertyPx("left", x + EFFECT_LEFT_OFFSET);
+      style.setPropertyPx("top", y);
+      style.setPropertyPx("left", x);
 
       new Animation() {
         private double deltaTop = -2;
@@ -111,9 +112,8 @@ public class VMeteorCursor extends Widget implements Paintable,
   public static final String ATTRIBUTE_IMAGE_RSRC = "im";
   
   private static final int PARTICLE_SIZE = 15;
-  private static final int EFFECT_TOP_OFFSET = 10;
-  private static final int EFFECT_LEFT_OFFSET = 10;
-  
+  private static final int PATICLE_DELAY_MILLIS = 50;
+
   /** The client side widget identifier */
   protected String paintableId;
   
@@ -195,14 +195,22 @@ public class VMeteorCursor extends Widget implements Paintable,
           previousMouseY);
       
       // ignore the first cursor move
-      if (previousMouseX != -1 && previousMouseY != -1) {
-        
-        // for each double exceeding of the threshold, paint one particle
-        int particleThresholdCounter = threshold;
-        while (particleThresholdCounter < speed) {
-          RootPanel.get().add(new Particle(mouseX, mouseY, speed));
-          particleThresholdCounter += threshold * 2;
-        }
+      if (previousMouseX != -1 && previousMouseY != -1 && speed > threshold) {
+
+        // delay the particle a little, so that it doesn't come directly
+        // underneath the cursor.
+        new Timer() {
+          @Override
+          public void run() {
+            // for each double exceeding of the threshold, paint one particle
+            int particleThresholdCounter = threshold;
+            while (particleThresholdCounter < speed) {
+              RootPanel.get().add(new Particle(mouseX, mouseY, speed));
+              particleThresholdCounter += threshold * 2;
+            }
+          }
+        }.schedule(PATICLE_DELAY_MILLIS);
+
       }
       
       previousMouseX = mouseX;
