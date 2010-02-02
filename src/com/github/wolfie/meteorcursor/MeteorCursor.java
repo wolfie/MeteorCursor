@@ -50,6 +50,37 @@ public class MeteorCursor extends AbstractComponent {
   }
   
   /**
+   * Create a new MeteorCursor without a particle image.
+   */
+  public MeteorCursor() {
+  }
+  
+  /**
+   * Create a new MeteorCursor with a defined static particle image.
+   * 
+   * @param particleImageThemeId
+   *          The theme resource id for the particle image.
+   * @see #setParticleImage(String)
+   */
+  public MeteorCursor(final String particleImageThemeId) {
+    setParticleImage(particleImageThemeId);
+  }
+  
+  /**
+   * Create a new MeteorCursor with a defined animated particle image.
+   * 
+   * @param particleImageThemeId
+   *          The theme resource id for the particle image, with '?' as the
+   *          frame number placeholder.
+   * @param frames
+   *          The total number of frames in the animation.
+   * @see #setParticleImage(String, int)
+   */
+  public MeteorCursor(final String particleImageThemeId, final int frames) {
+    setParticleImage(particleImageThemeId, frames);
+  }
+  
+  /**
    * Enable or disable the rendering.
    * 
    * @param enabled
