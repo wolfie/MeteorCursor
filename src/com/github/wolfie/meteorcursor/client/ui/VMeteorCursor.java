@@ -45,7 +45,7 @@ public class VMeteorCursor extends Widget implements Paintable,
       final Style style = e.getStyle();
       style.setPropertyPx("top", y);
       style.setPropertyPx("left", x);
-
+      
       new Animation() {
         private double deltaTop = -2;
         private double deltaLeft = -2;
@@ -59,15 +59,15 @@ public class VMeteorCursor extends Widget implements Paintable,
           
           if (progress < 1) {
             final int top = Double.valueOf(
-                y + 10 + (speed * distanceMultiplier * progress * deltaTop)
+                y + (speed * distanceMultiplier * progress * deltaTop)
                     + (gravity * progress * progress)).intValue();
             final int left = Double.valueOf(
-                x + 10 + (speed * distanceMultiplier * progress * deltaLeft))
+                x + (speed * distanceMultiplier * progress * deltaLeft))
                 .intValue();
-
+            
             style.setPropertyPx("top", top);
             style.setPropertyPx("left", left);
-
+            
             final int size = Double.valueOf(
                 Math.ceil(PARTICLE_SIZE - (PARTICLE_SIZE * progress)))
                 .intValue();
@@ -118,7 +118,7 @@ public class VMeteorCursor extends Widget implements Paintable,
   
   private static final int PARTICLE_SIZE = 15;
   private static final int PATICLE_DELAY_MILLIS = 50;
-
+  
   /** The client side widget identifier */
   protected String paintableId;
   
@@ -214,7 +214,7 @@ public class VMeteorCursor extends Widget implements Paintable,
       
       // ignore the first cursor move
       if (previousMouseX != -1 && previousMouseY != -1 && speed > threshold) {
-
+        
         // delay the particle a little, so that it doesn't come directly
         // underneath the cursor.
         new Timer() {
@@ -228,7 +228,7 @@ public class VMeteorCursor extends Widget implements Paintable,
             }
           }
         }.schedule(PATICLE_DELAY_MILLIS);
-
+        
       }
       
       previousMouseX = mouseX;
