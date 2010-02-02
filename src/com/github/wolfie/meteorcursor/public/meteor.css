@@ -1,14 +1,5 @@
-/*
-.v-meteorcursor-particle {
-	position: absolute;
-	background: black;
-	z-index: 9999;
-}
-*/
-
 .v-meteorcursor-particle {
 	background-color: transparent;
-	background-image: url(meteorcursor/vaadin-logo.png);
 	color: white;
 	position: absolute;
 	z-index: 9999;
