@@ -29,6 +29,7 @@ public class MeteorCursor extends AbstractComponent {
   private int gravity = 75;
   private int threshold = 10;
   private int particleLifetime = 1000;
+  private int frames = 0;
   private double distanceMultiplier = 2.0d;
   private ThemeResource particleImage;
   
@@ -41,6 +42,7 @@ public class MeteorCursor extends AbstractComponent {
     target.addAttribute(VMeteorCursor.ATTRIBUTE_DISTANCE_DBL,
         distanceMultiplier);
     target.addAttribute(VMeteorCursor.ATTRIBUTE_IMAGE_RSRC, particleImage);
+    target.addAttribute(VMeteorCursor.ATTRIBUTE_FRAMES_INT, frames);
     
     // workaround to Vaadin not always telling whether it's enabled or not
     // TODO: Need to take a closer look at why.
@@ -135,21 +137,41 @@ public class MeteorCursor extends AbstractComponent {
   /**
    * Set the image to be shown as the particle.
    * 
-   * @param particleImage
-   *          An image {@link ThemeResource}.
-   * @return <tt>true</tt> if <tt>particleImage</tt>is an accepted type.
+   * @param themeResourceId
+   *          An image in your theme.
+   * @return <tt>true</tt> if <tt>themeResourceId</tt> is an accepted type.
    *         <tt>false</tt> otherwise.
    */
-  public boolean setParticleImage(final ThemeResource particleImage) {
-    if (particleImage == null) {
+  public boolean setParticleImage(final String themeResourceId) {
+    return setParticleImage(themeResourceId, 0);
+  }
+  
+  /**
+   * Set animation of images to be shown as the particle.
+   * 
+   * @param themeResourceId
+   *          A series of images in your theme. Use the character '<tt>?</tt>'
+   *          as a placeholder for the one-digit zero-based frame number. The
+   *          placeholder character may not be used more than once.
+   * @param frames
+   *          The number of images, or frames, in the animation series. Must be
+   *          between 0 and 10 inclusive. If <tt>frames</tt> is 0, the
+   *          placeholder in <tt>themeResourceId</tt> will be used as-is and
+   *          thus will not be used as the frame number indicator.
+   * @return <tt>true</tt> if <tt>themeResourceId</tt> is an accepted type,
+   *         contains no more than one placeholder, and <tt>frames</tt> is in
+   *         between 0 and 10, inclusive. <tt>false</tt> otherwise.
+   */
+  public boolean setParticleImage(final String themeResourceId, final int frames) {
+    if (themeResourceId == null || frames > 10 || frames < 0) {
       return false;
     }
     
-    final String mt = particleImage.getMIMEType();
+    final ThemeResource particleImage = new ThemeResource(themeResourceId);
     
-    // borrowed from Embedded
-    if (mt.substring(0, mt.indexOf("/")).equalsIgnoreCase("image")) {
+    if (mimeTypeIsValid(particleImage) && filenameIsSane(themeResourceId)) {
       this.particleImage = particleImage;
+      this.frames = frames;
       requestRepaint();
       return true;
     } else {
@@ -157,7 +179,23 @@ public class MeteorCursor extends AbstractComponent {
     }
   }
   
+  private boolean filenameIsSane(final String themeResourceId) {
+    final boolean hasSeveralTokens = themeResourceId.replaceFirst("\\?", "")
+        .contains("?");
+    return !hasSeveralTokens;
+  }
+  
+  private boolean mimeTypeIsValid(final ThemeResource particleImage2) {
+    // borrowed from Embedded
+    final String mt = particleImage2.getMIMEType();
+    return mt.substring(0, mt.indexOf("/")).equalsIgnoreCase("image");
+  }
+  
   public ThemeResource getParticleImage() {
     return particleImage;
+  }
+  
+  public boolean isAnimated() {
+    return frames > 1;
   }
 }

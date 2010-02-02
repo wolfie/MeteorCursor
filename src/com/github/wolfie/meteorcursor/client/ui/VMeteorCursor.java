@@ -74,7 +74,7 @@ public class VMeteorCursor extends Widget implements Paintable,
              * the image, and the image is not re-scaled to fit 100% into the
              * Element.
              */
-            setHTML(getImgHTML(size));
+            setHTML(getImgHTML(size, progress));
             
           } else {
             removeFromParent();
@@ -89,9 +89,13 @@ public class VMeteorCursor extends Widget implements Paintable,
       }.run(particleLifetimeMillis);
     }
     
-    private String getImgHTML(final int size) {
-      return "<img src='" + getParticleImageURI() + "' height=" + size
-          + " width=" + size + "/>";
+    private String getImgHTML(final int size, final double progress) {
+      final int frameNumber = Double.valueOf(Math.floor(frames * progress))
+          .intValue();
+      final String image = particleImages[frameNumber];
+      
+      return "<img src='" + image + "' height=" + size + " width=" + size
+          + "/>";
     }
   }
   
@@ -106,6 +110,7 @@ public class VMeteorCursor extends Widget implements Paintable,
   public static final String ATTRIBUTE_PART_LIFETIME_INT = "pl";
   public static final String ATTRIBUTE_DISTANCE_DBL = "di";
   public static final String ATTRIBUTE_IMAGE_RSRC = "im";
+  public static final String ATTRIBUTE_FRAMES_INT = "fr";
   
   private static final int PARTICLE_SIZE = 15;
   private static final int EFFECT_TOP_OFFSET = 10;
@@ -124,7 +129,8 @@ public class VMeteorCursor extends Widget implements Paintable,
   private int threshold;
   private int particleLifetimeMillis;
   private double distanceMultiplier;
-  private String particleImage;
+  private int frames;
+  private String[] particleImages;
   
   private boolean disabled = false;
   
@@ -172,9 +178,21 @@ public class VMeteorCursor extends Widget implements Paintable,
       distanceMultiplier = uidl.getDoubleAttribute(ATTRIBUTE_DISTANCE_DBL);
     }
     
+    if (uidl.hasAttribute(ATTRIBUTE_FRAMES_INT)) {
+      frames = uidl.getIntAttribute(ATTRIBUTE_FRAMES_INT);
+    }
+    
     if (uidl.hasAttribute(ATTRIBUTE_IMAGE_RSRC)) {
-      particleImage = client.translateVaadinUri(uidl
+      final String particleImage = client.translateVaadinUri(uidl
           .getStringAttribute(ATTRIBUTE_IMAGE_RSRC));
+      
+      final int elements = Math.max(1, frames);
+      particleImages = new String[elements];
+      
+      for (int i = 0; i < elements; i++) {
+        particleImages[i] = particleImage.replace('?', String.valueOf(i)
+            .toCharArray()[0]);
+      }
     }
     
     this.client = client;
@@ -210,9 +228,5 @@ public class VMeteorCursor extends Widget implements Paintable,
   private double getDistanceTravelled(final int x, final int y,
       final int previousX, final int previousY) {
     return Math.sqrt(Math.pow(x - previousX, 2) + Math.pow(y - previousY, 2));
-  }
-  
-  private String getParticleImageURI() {
-    return particleImage != null ? particleImage : "";
   }
 }

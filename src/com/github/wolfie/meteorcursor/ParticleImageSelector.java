@@ -2,7 +2,6 @@ package com.github.wolfie.meteorcursor;
 
 import com.vaadin.data.Property.ValueChangeEvent;
 import com.vaadin.data.Property.ValueChangeListener;
-import com.vaadin.terminal.ThemeResource;
 import com.vaadin.ui.AbstractSelect;
 import com.vaadin.ui.CustomComponent;
 import com.vaadin.ui.OptionGroup;
@@ -19,9 +18,14 @@ public class ParticleImageSelector extends CustomComponent {
     
     public void valueChange(final ValueChangeEvent event) {
       final AbstractSelect select = (AbstractSelect) event.getProperty();
-      final String uri = (String) select.getItem(select.getValue())
+      final String image = (String) select.getItem(select.getValue())
           .getItemProperty(IMAGE_PROPERTY).getValue();
-      meteorCursor.setParticleImage(new ThemeResource(uri));
+      
+      if (!image.contains("?")) {
+        meteorCursor.setParticleImage(image);
+      } else {
+        meteorCursor.setParticleImage(image, 3);
+      }
     }
   }
   
@@ -39,6 +43,8 @@ public class ParticleImageSelector extends CustomComponent {
         "spark.png");
     optionGroup.addItem("Valentine's").getItemProperty(IMAGE_PROPERTY)
         .setValue("heart.png");
+    optionGroup.addItem("Animated").getItemProperty(IMAGE_PROPERTY).setValue(
+        "cross_?.png");
     
     optionGroup.select("Vaadin Logo");
     setCompositionRoot(optionGroup);
