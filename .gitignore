@@ -5,3 +5,6 @@ build
 WebContent/WEB-INF/lib
 WebContent/WEB-INF/web.xml
 WebContent/VAADIN/widgetsets
+WebContent/VAADIN/gwt-unitCache
+
+GWT development mode for MeteorCursor.launch
